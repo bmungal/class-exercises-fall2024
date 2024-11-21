@@ -1,5 +1,7 @@
-def add_nums(a: int, b: int) -> int:
-    return a + b
+from arithmetic import Arithmetic
+
+# def add_nums(a: int, b: int) -> int:
+#     return a + b
 
 
 def prompt_user_for_number() -> int:
