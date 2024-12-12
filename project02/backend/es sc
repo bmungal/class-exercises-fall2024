@@ -1,0 +1,38 @@
+                                             Table "public.courses"
+        Column         |           Type           | Collation | Nullable |               Default                
+-----------------------+--------------------------+-----------+----------+--------------------------------------
+ crn                   | integer                  |           | not null | nextval('courses_crn_seq'::regclass)
+ code                  | character varying        |           | not null | 
+ department            | character varying        |           | not null | 
+ title                 | character varying        |           | not null | 
+ hours                 | integer                  |           |          | 
+ days                  | character varying        |           |          | 
+ start_time            | timestamp with time zone |           |          | 
+ end_time              | timestamp with time zone |           |          | 
+ enrollment_current    | integer                  |           | not null | 
+ enrollment_max        | integer                  |           | not null | 
+ waitlist_max          | integer                  |           | not null | 
+ waitlist_available    | integer                  |           | not null | 
+ term_part             | character varying        |           | not null | 
+ start_date            | timestamp with time zone |           |          | 
+ end_date              | timestamp with time zone |           |          | 
+ instructional_method  | character varying        |           | not null | 
+ async_class           | boolean                  |           | not null | 
+ diversity_intensive   | boolean                  |           |          | 
+ diversity_intensive_r | boolean                  |           |          | 
+ distance_learning     | boolean                  |           |          | 
+ first_year_seminar    | boolean                  |           |          | 
+ graduate              | boolean                  |           |          | 
+ honors                | boolean                  |           |          | 
+ arts                  | boolean                  |           |          | 
+ service_learning      | boolean                  |           |          | 
+ open                  | boolean                  |           |          | 
+ location_id           | integer                  |           |          | 
+Indexes:
+    "courses_pkey" PRIMARY KEY, btree (crn)
+Foreign-key constraints:
+    "courses_location_id_fkey" FOREIGN KEY (location_id) REFERENCES locations(id)
+Referenced by:
+    TABLE "course_instructors" CONSTRAINT "course_instructors_course_id_fkey" FOREIGN KEY (course_id) REFERENCES courses(crn)
+    TABLE "schedule_courses" CONSTRAINT "schedule_courses_course_crn_fkey" FOREIGN KEY (course_crn) REFERENCES courses(crn)
+

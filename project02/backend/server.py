@@ -6,6 +6,7 @@ from sqlalchemy import and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload, selectinload
+from pydantic import BaseModel
 
 import models
 import serializers
@@ -36,17 +37,47 @@ async def startup():
 @app.get("/api/departments/", response_model=List[str])
 async def get_department_codes(db: AsyncSession = Depends(get_db)):
     # replace with your code...
-    return []
+    # department_code: str = Query(None),
+    # db: AsyncSession = Depends(get_db),
 
+    query = select(models.Course.department).distinct().order_by(models.Course.department)
+
+    # if department_code:
+    #     query = query.where(models.Course.code == department_code)
+
+    result = await db.execute(query)
+    # codes = result.scalars().all()
+    codes = [row[0] for row in result.fetchall()]
+
+
+    return codes
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+
+    class Config:
+        orm_mode = True  # Needed to work with SQLAlchemy ORM objects
 
 # Task 2
 # Note: replace response_model=object with response_model=User once you've got this working
-@app.get("/api/users/{username}", response_model=object)
+@app.get("/api/users/{username}", response_model=UserResponse)
 async def get_users_by_username(
     username: str, db: AsyncSession = Depends(get_db)
 ):
     # replace with your code...
-    return {}
+    # query = select(models.User).distinct().order_by(models.User)
+    query = select(models.User).where(models.User.username == username)
+    result = await db.execute(query)
+
+    name = result.scalar()
+    # name = result.scalar_one_or_none()
+    # if name is None:
+    #     raise HTTPException(status_code=404, detail="User not found")
+    return name
 
 
 # Task 3
@@ -56,16 +87,22 @@ async def get_courses(
     instructor: str = Query(None),
     department: str = Query(None),
     hours: int = Query(None),
+    di: bool = Query(None),
+    dir: bool = Query(None),
+    honors: bool = Query(None),
+    fys: bool = Query(None),
+    open: bool = Query(None),
+    days: str = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-
+    
     # base query to "courses" table that also asks SQLAlchemy
     # to join to the "instructors" and "locations" table.
     query = select(models.Course).options(
         selectinload(models.Course.instructors),
         selectinload(models.Course.location),
     )
-
+    
     # includes a "title" filter if specified:
     if title:
         query = query.where(models.Course.title.ilike(f"%{title}%"))
@@ -86,6 +123,30 @@ async def get_courses(
                 models.Instructor.first_name.ilike(f"%{instructor}%"),
             )
         )
+
+    # includes a "DI" filter if specified:
+    if di is not None:
+        query = query.where(models.Course.diversity_intensive == di)
+
+     # includes a "DIR" filter if specified:
+    if dir is not None:
+        query = query.where(models.Course.diversity_intensive_r == dir)
+    
+     # includes a "honors" filter if specified:
+    if honors is not None:
+        query = query.where(models.Course.honors == honors)
+    
+     # includes a "FYS" filter if specified:
+    if fys is not None:
+        query = query.where(models.Course.first_year_seminar == fys)
+    
+     # includes a "open" filter if specified:
+    if open is not None:
+        query = query.where(models.Course.open == open)
+    
+    # includes a "days" filter if specified:
+    if days:
+        query = query.where(models.Course.days.ilike(f"%{days}%"))
 
     result = await db.execute(
         query.order_by(models.Course.department, models.Course.code)
