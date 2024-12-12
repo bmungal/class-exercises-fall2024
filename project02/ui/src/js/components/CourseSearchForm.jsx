@@ -13,6 +13,25 @@ import {
 } from "antd";
 
 export default function CourseSearchForm({ fetchCourses }) {
+    const [departments, setDepartments] = useState([]); // State for department options
+
+    // Fetch departments from the API
+    useEffect(() => {
+        async function fetchDepartments() {
+            try {
+                const response = await fetch("/api/departments");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch departments");
+                }
+                const data = await response.json();
+                setDepartments(data); // Set department options in state
+            } catch (error) {
+                console.error("Error fetching departments:", error);
+            }
+        }
+        fetchDepartments();
+    }, []); // Empty dependency array ensures this runs only once
+
     const classificationOpts = [
         { key: "fys", value: "First Year Seminar" },
         { key: "di", value: "Diversity Intensive" },
@@ -71,7 +90,7 @@ export default function CourseSearchForm({ fetchCourses }) {
                     {/* Department */}
                     <Form.Item label="Department" name="department">
                         <Select>
-                            <Select.Option value="">Any</Select.Option>
+                            {/* <Select.Option value="">Any</Select.Option> */}
 
                             {/* React Task 2:
                                 replace these hardcoded ones with ones 
@@ -79,12 +98,18 @@ export default function CourseSearchForm({ fetchCourses }) {
                                 You will need to use the useEffect and useState React 
                                 functions. 
                             */}
-                            <Select.Option key="CSCI" value="CSCI">
+                            {/* <Select.Option key="CSCI" value="CSCI">
                                 CSCI
                             </Select.Option>
                             <Select.Option key="NM" value="NM">
                                 NM
-                            </Select.Option>
+                            </Select.Option> */}
+                            <Select.Option value="">Any</Select.Option>
+                            {departments.map((dept) => (
+                                <Select.Option key={dept} value={dept}>
+                                    {dept}
+                                </Select.Option>
+                            ))}
                         </Select>
                     </Form.Item>
 
